@@ -1,0 +1,64 @@
+מס' סטודנטים - מספר הסטודנטים שנרשמו לקורס זה
+UPDATE Courses
+SET  NUM_OF_STUDENTS=b.count_students
+from 
+(select Grades.COURSE_ID, COUNT(*) as count_students from Grades group by Grades.COURSE_ID) b 
+inner join  Courses on b.COURSE_ID= Courses.ID
+
+ממוצע - ציון ממוצע הקורס
+UPDATE Courses
+SET  AVG_GRADE=b.sumGrades
+from 
+(select Grades.COURSE_ID, SUM(Grades.grade) as sumGrades from Grades group by Grades.COURSE_ID) b 
+inner join  Courses on b.COURSE_ID= Courses.ID
+
+הציון הגבוה ביותר בקורס זה
+UPDATE Courses
+SET  HIGHEST_GRADE=b.maxGrade
+from 
+(select Grades.COURSE_ID, MAX(Grades.grade) as maxGrade from Grades group by Grades.COURSE_ID) b 
+inner join  Courses on b.COURSE_ID= Courses.ID
+
+מספר הקורס אליו נרשמו הכי הרבה סטודנטים
+UPDATE Info
+SET  COURSE_ID_WITH_MAX_STUDENTS=c.ID_max_St
+from
+(select top(1) Courses.ID  as ID_max_St from Courses inner join (select max(Courses.NUM_OF_STUDENTS) as max_St from Courses) b
+on Courses.NUM_OF_STUDENTS=b.max_St) c Where Info.ID=1
+
+מספר הקורס שבו הציון הממוצע הוא הגבוה ביותר
+UPDATE Info
+SET  COURSE_ID_WITH_MAX_AVG=c.ID_avg_St
+from
+(select top(1) Courses.ID  as ID_avg_St from Courses inner join
+(select max(Courses.AVG_GRADE) as avg_St from Courses) b
+on Courses.AVG_GRADE=b.avg_St) c Where Info.ID=1
+
+מספר זיהוי תלמיד שנרשם להכי הרבה קורסים
+UPDATE Info
+SET  STUDENTS_ID_MAX_ENROLL_COUNT=b.stID
+from
+(select top(1) 
+   Grades.STUDENT_ID as stID,count(*) as count_courses from Grades group
+by Grades.STUDENT_ID order by count_courses  desc )b Where Info.ID=1
+
+מספר זיהוי תלמיד שקיבל הכי הרבה פעמים את הציון הגבוה ביותר בקורס
+UPDATE Info
+SET  STUDENTS_ID_MAX_HIGHEST_COUNT=c.ID
+from
+(select top(1)    b.StID as ID,count(*) as count_HG from
+(select Grades.STUDENT_ID as StID from Grades inner join Courses on
+Grades.COURSE_ID=Courses.ID AND Grades.GRADE=Courses.HIGHEST_GRADE) b group by b.StID
+order by count_HG  desc) c Where Info.ID=1
+
+שם המשפחה שחוזר על עצמו הכי הרבה פעמים
+UPDATE Info
+SET  STUDENT_LAST_NAME_WITH_MAX_COUNT=c.LN
+from
+(select top(1) b.LN from
+(select CAST(Students.LAST_NAME AS NVARCHAR(100)) as LN ,count(*) as count_n
+from Students group by CAST(Students.LAST_NAME AS NVARCHAR(100)))b
+order by count_n desc) c Where Info.ID=1
+
+
+
